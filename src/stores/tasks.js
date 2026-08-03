@@ -61,19 +61,26 @@ export const useTasksStore = defineStore('tasks', () => {
     }
   }
 
-  async function updateTask(id, { title, imgAttachmentKey } = {}) {
+  async function updateTask(id, payload = {}) {
+    const { title, imgAttachmentKey } = payload
     if (title !== undefined && !title.trim()) return
     error.value = null
-    const payload = {}
-    if (title !== undefined) payload.title = title.trim()
-    if (imgAttachmentKey != null) payload.img_attachment_key = imgAttachmentKey
+    const data = {}
+    if (title !== undefined) {
+      data.title = title.trim()
+    }
+    if (imgAttachmentKey != null) {
+      data.img_attachment_key = imgAttachmentKey
+    }
     try {
-      const response = await tasksApi.update(id, payload)
+      const response = await tasksApi.update(id, data)
       const index = tasks.value.findIndex((t) => t.id === id)
-      if (index !== -1) tasks.value[index] = response.data
+      if (index !== -1) {
+        tasks.value[index] = response.data
+      }
     } catch (err) {
       error.value = 'Erro ao editar tarefa.'
-      console.error(err)
+      console.error(err.response?.data || err)
     }
   }
 
