@@ -3,6 +3,13 @@
     <form class="login-form login-card" @submit.prevent="handleLogin">
       <h1 class="login-title">Entrar</h1>
 
+      <div 
+        v-if="successMessage" 
+        class="success-message"
+      >
+        {{ successMessage }}
+      </div>
+
       <div
         v-if="errorMessage"
         class="error-message login-error"
@@ -55,6 +62,13 @@
       >
         {{ loading ? 'Entrando...' : 'Entrar' }}
       </button>
+      <p class="register-link">
+        Não possui uma conta?
+
+        <RouterLink to="/register">
+          Criar conta
+        </RouterLink>
+      </p>
     </form>
   </div>
 </template>
@@ -63,7 +77,10 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
+import { RouterLink } from 'vue-router'
+import { useRoute } from 'vue-router'
 
+const route = useRoute()
 const router = useRouter();
 const authStore = useAuthStore();
 
@@ -71,6 +88,11 @@ const email = ref('');
 const password = ref('');
 const loading = ref(false);
 const errorMessage = ref('');
+const successMessage = ref('');
+
+if (route.query.registered === 'true') {
+  successMessage.value = 'Conta criada com sucesso. Faça seu login.';
+}
 
 async function handleLogin() {
   loading.value = true;

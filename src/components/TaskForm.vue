@@ -21,20 +21,18 @@
     </div>
 
     <div class="image-section">
+      <!-- Preview da imagem já salva ou capturada -->
       <img
         v-if="previewUrl || editingTask?.img_url"
         :src="previewUrl || editingTask?.img_url"
         class="image-preview"
         alt="Imagem da tarefa"
       />
+
+      <!-- Input com capture (padrão) -->
       <label class="image-label" :class="{ disabled: uploading }">
         <span v-if="uploading" class="upload-status">Enviando...</span>
-        <span v-else>
-          {{ previewUrl || editingTask?.img_url
-            ? 'Trocar imagem'
-            : 'Adicionar imagem'
-          }}
-        </span>
+        <span v-else>Adicionar imagem</span>
         <input
           type="file"
           accept="image/jpeg,image/png"
@@ -44,10 +42,20 @@
           @change="handleImageChange"
         />
       </label>
-      <p class="image-help">
-        Em celular, o botão pode abrir a câmera.
-        Em notebook, abre o seletor de arquivos.
-      </p>
+
+      <!-- Alternativa com preview ao vivo -->
+      <button
+        type="button"
+        class="task-button-secondary"
+        @click="showCameraCapture = !showCameraCapture"
+      >
+        {{ showCameraCapture ? 'Fechar câmera' : 'Abrir preview ao vivo' }}
+      </button>
+
+      <CameraCapture
+        v-if="showCameraCapture"
+        @captured="handleCameraCapture"
+      />
     </div>
   </form>
 </template>
@@ -241,5 +249,19 @@ function handleCancel() {
 
 .upload-status {
   color: #888;
+}
+
+.task-button-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: white;
+  border: 1.5px solid #4a90d9;
+  color: #4a90d9;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
 }
 </style>
