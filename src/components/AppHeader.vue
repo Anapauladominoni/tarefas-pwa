@@ -1,6 +1,6 @@
 <template>
   <header class="app-header">
-    <h1>Meus gestor de Tarefas!!!!</h1>
+    <h1>Meu Gestor de Tarefas!</h1>
     <nav>
       <router-link to="/">Início</router-link>
       <router-link to="/about">Sobre</router-link>
@@ -46,6 +46,7 @@ function handleLogout() {
 nav {
   display: flex;
   gap: 16px;
+  align-items: center;
 }
 
 nav a {
@@ -57,5 +58,14 @@ nav a {
 
 nav a.router-link-active {
   color: #4a90d9;
+}
+
+nav .logout-btn {
+  font-size: 0.9rem;
+  color: #4a90d9;
+  border-color: #4a90d9;
+  border-radius: 25%;
+  padding: 10px;
+  background-color: #f5f5f5;
 }
 </style>
