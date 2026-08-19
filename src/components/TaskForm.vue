@@ -77,6 +77,22 @@ const previewUrl = ref(null)
 const imgAttachmentKey = ref(null)
 const uploading = ref(false)
 
+async function handleGetLocation() {
+  const captured = await requestCurrentLocation()
+  if (!captured) return
+
+  try {
+    const address = await geocodingApi.reverse(
+      captured.latitude,
+      captured.longitude,
+    )
+    setLocationLabel(address?.label)
+  } catch {
+    locationError.value =
+      'Localização obtida, mas não foi possível identificar a rua.'
+  }
+}
+
 watch(
   () => props.editingTask,
   (task) => {
