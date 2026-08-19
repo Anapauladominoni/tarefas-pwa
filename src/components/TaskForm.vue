@@ -8,7 +8,7 @@
         class="task-input"
       />
       <button type="submit" class="task-button" :disabled="uploading">
-        {{ editingTask ? 'Alterar' : 'Adicionar' }}
+        {{ editingTask ? "Alterar" : "Adicionar" }}
       </button>
       <button
         v-if="editingTask"
@@ -19,6 +19,8 @@
         Cancelar
       </button>
     </div>
+
+    <TaskLocationMap />
 
     <div class="image-section">
       <!-- Preview da imagem já salva ou capturada -->
@@ -49,54 +51,52 @@
         class="task-button-secondary"
         @click="showCameraCapture = !showCameraCapture"
       >
-        {{ showCameraCapture ? 'Fechar câmera' : 'Abrir preview ao vivo' }}
+        {{ showCameraCapture ? "Fechar câmera" : "Abrir preview ao vivo" }}
       </button>
 
-      <CameraCapture
-        v-if="showCameraCapture"
-        @captured="handleCameraCapture"
-      />
+      <CameraCapture v-if="showCameraCapture" @captured="handleCameraCapture" />
     </div>
   </form>
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
-import tasksApi from '../api/tasksApi.js'
+import { ref, watch } from "vue";
+import tasksApi from "../api/tasksApi.js";
+import TaskLocationMap from "./TaskLocationMap.vue";
 
 const props = defineProps({
   editingTask: {
     type: Object,
     default: null,
   },
-})
+});
 
-const emit = defineEmits(['add', 'update', 'cancel'])
-const newTask = ref('')
-const previewUrl = ref(null)
-const imgAttachmentKey = ref(null)
-const uploading = ref(false)
+const emit = defineEmits(["add", "update", "cancel"]);
+const newTask = ref("");
+const previewUrl = ref(null);
+const imgAttachmentKey = ref(null);
+const uploading = ref(false);
 
 async function handleGetLocation() {
-  const captured = await requestCurrentLocation()
-  if (!captured) return
+  const captured = await requestCurrentLocation();
+  if (!captured) return;
 
   try {
     const address = await geocodingApi.reverse(
       captured.latitude,
       captured.longitude,
-    )
-    setLocationLabel(address?.label)
+    );
+    setLocationLabel(address?.label);
   } catch {
     locationError.value =
-      'Localização obtida, mas não foi possível identificar a rua.'
+      "Localização obtida, mas não foi possível identificar a rua.";
   }
 }
 
 watch(
   () => props.editingTask,
   (task) => {
-    newTask.value = task ? task.title : '';
+    newTask.value = task ? task.title : "";
     if (previewUrl.value) URL.revokeObjectURL(previewUrl.value);
     previewUrl.value = null;
     imgAttachmentKey.value = null;
@@ -104,20 +104,20 @@ watch(
 );
 
 async function handleImageChange(event) {
-  const file = event.target.files[0]
-  if (!file) return
+  const file = event.target.files[0];
+  if (!file) return;
   if (previewUrl.value) URL.revokeObjectURL(previewUrl.value);
-  previewUrl.value = URL.createObjectURL(file)
-  uploading.value = true
+  previewUrl.value = URL.createObjectURL(file);
+  uploading.value = true;
   try {
-    const response = await tasksApi.uploadImage(file)
-    imgAttachmentKey.value = response.data.attachment_key
+    const response = await tasksApi.uploadImage(file);
+    imgAttachmentKey.value = response.data.attachment_key;
   } catch (err) {
-    console.error('Erro ao fazer upload da imagem', err)
-    previewUrl.value = null
-    imgAttachmentKey.value = null
+    console.error("Erro ao fazer upload da imagem", err);
+    previewUrl.value = null;
+    imgAttachmentKey.value = null;
   } finally {
-    uploading.value = false
+    uploading.value = false;
   }
 }
 
@@ -130,23 +130,23 @@ function handleSubmit() {
   };
 
   if (props.editingTask) {
-    emit('update', props.editingTask.id, payload);
+    emit("update", props.editingTask.id, payload);
   } else {
-    emit('add', payload);
+    emit("add", payload);
   }
 
-  newTask.value = '';
+  newTask.value = "";
   if (previewUrl.value) URL.revokeObjectURL(previewUrl.value);
   previewUrl.value = null;
   imgAttachmentKey.value = null;
 }
 
 function handleCancel() {
-  newTask.value = '';
+  newTask.value = "";
   if (previewUrl.value) URL.revokeObjectURL(previewUrl.value);
   previewUrl.value = null;
   imgAttachmentKey.value = null;
-  emit('cancel');
+  emit("cancel");
 }
 </script>
 
