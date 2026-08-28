@@ -16,6 +16,8 @@ L.Icon.Default.mergeOptions({
   shadowUrl: markerShadow,
 })
 
+L.Icon.Default.imagePath = ''
+
 const props = defineProps({
   location: { type: Object, required: true },
 })

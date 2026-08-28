@@ -20,7 +20,37 @@
       </button>
     </div>
 
-    <TaskLocationMap />
+    <div class="location-section">
+      <button
+        type="button"
+        class="task-button-secondary"
+        :disabled="!isSupported || loadingLocation"
+        @click="handleGetLocation"
+      >
+        {{ loadingLocation ? "Obtendo localização..." : "Usar localização atual" }}
+      </button>
+
+      <p v-if="loadingLocation" class="location-hint">
+        Aguardando o navegador responder à permissão...
+      </p>
+      <p v-if="locationError" class="location-error">{{ locationError }}</p>
+
+      <div v-if="location" class="location-info">
+        <p v-if="location.label" class="location-address">{{ location.label }}</p>
+        <p class="location-coords">
+          {{ location.latitude.toFixed(5) }}, {{ location.longitude.toFixed(5) }}
+          <span v-if="location.accuracy > 0">(precisão ~{{ Math.round(location.accuracy) }} m)</span>
+        </p>
+        <TaskLocationMap :location="location" />
+        <button
+          type="button"
+          class="task-button-secondary location-remove"
+          @click="handleRemoveLocation"
+        >
+          Remover localização
+        </button>
+      </div>
+    </div>
 
     <div class="image-section">
       <!-- Preview da imagem já salva ou capturada -->
@@ -60,9 +90,24 @@
 </template>
 
 <script setup>
-import { ref, watch } from "vue";
+import { onMounted, ref, watch } from "vue";
 import tasksApi from "../api/tasksApi.js";
+import geocodingApi from "../api/geocodingApi.js";
+import { buildLocationPayload } from "../utils/location.js";
+import { useGeolocation } from "../composables/useGeolocation.js";
 import TaskLocationMap from "./TaskLocationMap.vue";
+
+const {
+  isSupported,
+  loadingLocation,
+  locationError,
+  location,
+  readPermissionState,
+  setLocationFromTask,
+  clearLocation,
+  setLocationLabel,
+  requestCurrentLocation,
+} = useGeolocation();
 
 const props = defineProps({
   editingTask: {
@@ -100,8 +145,17 @@ watch(
     if (previewUrl.value) URL.revokeObjectURL(previewUrl.value);
     previewUrl.value = null;
     imgAttachmentKey.value = null;
+    if (task) {
+      setLocationFromTask(task);
+    } else {
+      clearLocation();
+    }
   },
 );
+
+onMounted(() => {
+  readPermissionState();
+});
 
 async function handleImageChange(event) {
   const file = event.target.files[0];
@@ -127,6 +181,7 @@ function handleSubmit() {
   const payload = {
     title: newTask.value.trim(),
     imgAttachmentKey: imgAttachmentKey.value,
+    ...buildLocationPayload(location.value),
   };
 
   if (props.editingTask) {
@@ -139,6 +194,10 @@ function handleSubmit() {
   if (previewUrl.value) URL.revokeObjectURL(previewUrl.value);
   previewUrl.value = null;
   imgAttachmentKey.value = null;
+}
+
+function handleRemoveLocation() {
+  clearLocation();
 }
 
 function handleCancel() {
@@ -279,5 +338,49 @@ function handleCancel() {
   font-size: 0.875rem;
   cursor: pointer;
   transition: background-color 0.2s;
+}
+
+.location-section {
+  margin-bottom: 16px;
+}
+
+.location-hint,
+.location-error {
+  font-size: 0.85rem;
+  margin: 8px 0 0;
+}
+
+.location-error {
+  color: #c0392b;
+}
+
+.location-info {
+  margin-top: 12px;
+  padding: 12px;
+  background: #f8f9fa;
+  border: 1px solid #e3e6ea;
+  border-radius: 8px;
+}
+
+.location-address {
+  margin: 0 0 4px;
+  font-weight: 600;
+  color: #333;
+}
+
+.location-coords {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.location-remove {
+  margin-top: 12px;
+  border-color: #e74c3c;
+  color: #e74c3c;
+}
+
+.location-remove:hover {
+  background: #fdecea;
 }
 </style>

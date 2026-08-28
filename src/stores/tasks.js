@@ -39,6 +39,16 @@ export const useTasksStore = defineStore('tasks', () => {
       data.img_attachment_key = imgAttachmentKey
     }
 
+    for (const field of [
+      'latitude',
+      'longitude',
+      'geolocation_accuracy',
+      'geolocation_timestamp',
+      'location_label',
+    ]) {
+      data[field] = payload[field] ?? null
+    }
+
     try {
       const response = await tasksApi.create(data)
       tasks.value.push(response.data)
@@ -83,6 +93,15 @@ export const useTasksStore = defineStore('tasks', () => {
     }
     if (imgAttachmentKey != null) {
       data.img_attachment_key = imgAttachmentKey
+    }
+    for (const field of [
+      'latitude',
+      'longitude',
+      'geolocation_accuracy',
+      'geolocation_timestamp',
+      'location_label',
+    ]) {
+      data[field] = payload[field] ?? null
     }
     try {
       const response = await tasksApi.update(id, data)
